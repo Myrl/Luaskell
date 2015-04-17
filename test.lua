@@ -43,9 +43,16 @@ function take(n, l)
 end
 
 function map(l, f)
+	local id = helper.id
+	local makeThunk = thunk.makeThunk
+	if table.empty(thunk.getValue(l)) then return end
+	return makeThunk(id({makeThunk(function () return f(head(l)) end), makeThunk(function () return map(tail(l), f) end)}))
+end
+
+function map_(l, f)
 	if table.empty(thunk.getValue(l)) then return end
 	f(head(l))
-	return map(tail(l), f)
+	return map_(tail(l), f)
 end
 
 function rep(x)
@@ -54,4 +61,4 @@ function rep(x)
 	return makeThunk(id({makeThunk(id(x)), makeThunk(function () return rep(x) end)}))
 end
 
-map(incFromTo(1,5,2), print)
+map_(map(incFrom(1), function (x) return x*2 end), print)
